@@ -5,7 +5,6 @@ import dot from "./dot.svg"
 
 let firstPLayerContainer = document.querySelector(".first-player")
 let secondPlayerContainer = document.querySelector(".second-player")
-let informationContainer = document.querySelector(".information")
 
 const resetButton = document.querySelector(".reset")
 const startButton = document.querySelector(".start")
@@ -131,6 +130,7 @@ function startGame(){
     isStarted = true
     beginnerSelect(players[0],players[1])
     startButton.classList.add("hidden")
+    firstPLayerContainer.style.pointerEvents = "none"
 }
 
 
@@ -138,7 +138,7 @@ async function resetGame(){
     startButton.classList.remove("hidden")
     finalMessage.classList.add("hidden")
     resetButton.classList.add("hidden")
-
+    firstPLayerContainer.style.pointerEvents = "auto"
     firstPLayerContainer.classList.remove("turn")
     secondPlayerContainer.classList.remove("turn")
     players = []
@@ -213,7 +213,6 @@ function turnChange(from,to){
 async function botPlay(bot){
     let humanGameBoard = players[0].player.gameBoard
     let humanUI = players[0]
-    let isDone = false
 
     while(turn === bot){
         let coordinate = bot.player.makeRandomMove(humanGameBoard)
@@ -222,7 +221,7 @@ async function botPlay(bot){
         let direction = Math.random() < 0.5?"h":"v";
         let minusOrPlus = Math.random() < 0.5?1:-1
         if(isDone && turn === bot){
-            await sleep(300)
+            await sleep(250)
             while (turn === bot && isDone){
                 if(direction === "h")
                     coordinate =
@@ -234,7 +233,7 @@ async function botPlay(bot){
                         (new Coordinate(coordinate.x ,coordinate.y+ 1*minusOrPlus))
                 target = humanUI.boardToElement.get(coordinate)
                 isDone = hitEventListener(target,humanGameBoard,coordinate,humanUI)
-                if(turn === bot) await sleep(300)
+                if(turn === bot) await sleep(250)
             }
         }
     }
