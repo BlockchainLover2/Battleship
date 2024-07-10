@@ -5,67 +5,99 @@ function isInRange(value,min,max){
 function getRandomInt(min,max){
     return Math.floor(Math.random() * (max - min)) + min;
 }
+function isValidShip(beginningCoordinate,direction,length,gameBoard){
+    if(direction === "horizontal"){
+        if(beginningCoordinate.x + length - 1 >= 10) return false
+
+
+        for (let i = 0; i < length; i++) {
+            let board =
+                gameBoard.getCoordinateFromCoordinateObj(new Coordinate(beginningCoordinate.x+i,beginningCoordinate.y))
+
+            if(board.ship){
+                return false
+            }
+        }
+    }
+    else{
+        if(beginningCoordinate.y + length - 1 >= 10) return false
+        for (let i = 0; i < length; i++) {
+            let board =
+                gameBoard.getCoordinateFromCoordinateObj(new Coordinate(beginningCoordinate.x,beginningCoordinate.y+i))
+            if(board.ship){
+                return false
+            }
+        }
+    }
+    return true
+}
 
 export class Ship{
     length
     hitAmount
     isSunk
     coordinates
+    direction
 
-
-    constructor(ships) {
+    constructor(gameBoard) {
         this.coordinates = []
-        let isDone = false
-            while (!isDone || this.coordinates.length === 0){
-                isDone = false
+            while (true){
                 let length = getRandomInt(1,5)
                 let beginningCoordinate = new Coordinate(getRandomInt(0,10),getRandomInt(0,10))
-                if(ships.filter(x=>x.coordinates.filter(y=>y.equals(beginningCoordinate))[0]).length >= 1){
-                    continue
-                }
+
                 let randomNum = Math.random()
-                if(randomNum < 0.5 &&  beginningCoordinate.x + length - 1 < 10){
-                    this.coordinates.push(beginningCoordinate)
-                    for (let i = 1; i < length; i++) {
-                        let previousCoordinate = this.coordinates[i-1]
-
-
-                        if(ships.filter(x=>x.coordinates.filter(y=>y.equals(new Coordinate(previousCoordinate.x+1,previousCoordinate.y)))[0]).length >= 1){
-                            this.coordinates = []
-                            break
-                        }
-
-                        this.coordinates.push(
-                            new Coordinate(previousCoordinate.x+1,previousCoordinate.y))
-                    }
-                    isDone = true
-                    this.length = length
+                if(randomNum < 0.5 &&  isValidShip(beginningCoordinate,"horizontal",length,gameBoard)){
+                    this.#assignShips("horizontal",gameBoard,beginningCoordinate,length)
+                    this.direction = "horizontal"
+                    break
                 }
-                else if(beginningCoordinate.y + length - 1 < 10){
-                    this.coordinates.push(beginningCoordinate)
-                    for (let i = 1; i < length; i++) {
-                        let previousCoordinate = this.coordinates[i-1]
-
-
-
-                        if(ships.filter(x=>x.coordinates.filter(y=>y.equals(new Coordinate(previousCoordinate.x,previousCoordinate.y+1)))[0]).length >= 1){
-                            this.coordinates = []
-                            break
-                        }
-                        this.coordinates.push(
-                            new Coordinate(previousCoordinate.x,previousCoordinate.y+1))
-
-                    }
-
-                    isDone = true
-                    this.length = length
-
+                else if(isValidShip(beginningCoordinate,"vertical",length,gameBoard)){
+                    this.#assignShips("vertical",gameBoard,beginningCoordinate,length)
+                    this.direction = "vertical"
+                    break
                 }
             }
         this.isSunk = false
         this.hitAmount = 0
     }
 
+    set(gameBoard,newBeginningCoordinate,direction){
+        this.coordinates.forEach(coordinate=>coordinate.ship = null)
+        if(isValidShip(newBeginningCoordinate,direction,this.length,gameBoard)){
+            this.coordinates = []
+            this.#assignShips(direction,gameBoard,newBeginningCoordinate,this.length)
+            return true
+        }
+        this.coordinates.forEach(coordinate=>coordinate.ship = this)
+        return false
+    }
+
+
+    #assignShips(direction,gameBoard,beginningCoordinate,length){
+        let newCoordinate = gameBoard.getCoordinateFromCoordinateObj(beginningCoordinate)
+        newCoordinate.ship = this
+        this.coordinates.push(newCoordinate)
+
+        if(direction === "horizontal"){
+            for (let i = 1; i < length; i++) {
+                let newCoordinate =
+                    gameBoard.getCoordinateFromCoordinateObj(new Coordinate(beginningCoordinate.x+i,beginningCoordinate.y))
+                this.coordinates.push(newCoordinate)
+
+                newCoordinate.ship = this
+            }
+        }
+        else{
+            for (let i = 1; i < length; i++) {
+                let newCoordinate =
+                    gameBoard.getCoordinateFromCoordinateObj(new Coordinate(beginningCoordinate.x,beginningCoordinate.y+i))
+                this.coordinates.push(newCoordinate)
+                newCoordinate.ship = this
+            }
+        }
+        this.length = length
+
+    }
 
     hit(){
         this.hitAmount++
@@ -87,10 +119,6 @@ export class GameBoard{
         this.board = []
         this.ships = []
         this.hits = []
-        for (let i = 0; i < amountOfShip; i++) {
-            let ship = new Ship(this.ships)
-            this.ships.push(ship)
-        }
         this.length = length
         for (let i = 0; i < length; i++) {
             for (let j = 0; j < length; j++) {
@@ -98,23 +126,22 @@ export class GameBoard{
             }
         }
 
-
+        for (let i = 0; i < amountOfShip; i++) {
+            let ship = new Ship(this)
+            this.ships.push(ship)
+        }
     }
 
     receiveAttack(coordinate){
-        let mapCoordinate = this.getCoordinateFromCoordinateObj(coordinate)
-        if(mapCoordinate.isHit)
-            return
+        if(coordinate.isHit)
+            return null
 
-        let ship =
-            this.ships.filter
-            (x=>x.coordinates.filter(y=>y.equals(mapCoordinate))[0])[0]
+        let ship = coordinate.ship
         if(ship){
             ship.hit()
-
         }
-        this.hits.push({x:coordinate.x,y:coordinate.y})
-        mapCoordinate.isHit = true
+        this.hits.push({x:coordinate.x,y:coordinate.y,shipHit:coordinate.ship!==null})
+        coordinate.isHit = true
         if(this.ships.every(x=>x.isSunk)){
             return this.hits
         }
@@ -138,6 +165,7 @@ export class GameBoard{
 
 
 
+
 export class Player{
     playerType
     gameBoard
@@ -152,15 +180,33 @@ export class Player{
 
 }
 
+
+
+export class Bot extends Player{
+
+
+
+    makeRandomMove(gameBoard){
+        let randomNumX = getRandomInt(0,10)
+        let randomNumY = getRandomInt(0,10)
+
+        return gameBoard.getCoordinate(randomNumX,randomNumY)
+    }
+
+
+}
+
 export class Coordinate{
     x
     y
     isHit
+    ship
 
     constructor(x,y) {
         this.x = x
         this.y = y
         this.isHit=false
+        this.ship = null
     }
 
 
