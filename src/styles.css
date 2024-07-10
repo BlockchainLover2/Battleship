@@ -1,0 +1,45 @@
+html{
+    font-family: system-ui;
+}
+
+
+body{
+    margin: 0;
+    height: 100vh;
+    padding: 0 3rem;
+}
+
+.container{
+    height: 100%;
+    display: grid;
+    grid-template-columns: 802px 1fr 802px;
+    align-items: center;
+}
+
+.ship{
+    background: blue;
+    height: 100%;
+    width: 100%;
+    border: 1px solid black;
+}
+
+.ship.hover{
+    background: green;
+}
+
+.board-element{
+    border: solid 1px black;
+    width: 80px;
+    height: 80px;
+    box-sizing: border-box;
+}
+
+
+.first-player,.second-player{
+    border: 1px solid black;
+    height: 800px;
+    display: flex;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+
+}
