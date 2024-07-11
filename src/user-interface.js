@@ -95,7 +95,8 @@ function moveShipEventListener(e,ship,gameBoard,playerUI){
                 elementArrayElement.style.pointerEvents = "none"
                 let rect = elementArrayElement.getBoundingClientRect();
                 let newBeginningBoardElement = document.elementFromPoint(rect.left+40, rect.top+40)
-                if(newBeginningBoardElement.classList.contains("board-element")){
+                if(newBeginningBoardElement.classList.contains("board-element") &&
+                    newBeginningBoardElement.parentElement.classList.contains("first-player")){
                     let newBeginningBoard = playerUI.elementToBoard.get(newBeginningBoardElement)
                     ship.set(gameBoard,newBeginningBoard,ship.direction)
                 }
