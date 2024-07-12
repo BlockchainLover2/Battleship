@@ -39,26 +39,36 @@ export class Ship{
     coordinates
     direction
 
-    constructor(gameBoard) {
+    constructor(gameBoard,decidedLength) {
         this.coordinates = []
             while (true){
-                let length = getRandomInt(1,5)
-                let beginningCoordinate = new Coordinate(getRandomInt(0,10),getRandomInt(0,10))
-
-                let randomNum = Math.random()
-                if(randomNum < 0.5 &&  isValidShip(beginningCoordinate,"horizontal",length,gameBoard)){
-                    this.#assignShips("horizontal",gameBoard,beginningCoordinate,length)
-                    this.direction = "horizontal"
-                    break
-                }
-                else if(isValidShip(beginningCoordinate,"vertical",length,gameBoard)){
-                    this.#assignShips("vertical",gameBoard,beginningCoordinate,length)
-                    this.direction = "vertical"
+            let length
+                if(decidedLength !== undefined)
+                    length = decidedLength
+                else
+                    length = getRandomInt(1,5)
+                if(this.createShip(length,gameBoard)){
                     break
                 }
             }
         this.isSunk = false
         this.hitAmount = 0
+    }
+
+    createShip(length,gameBoard){
+        let beginningCoordinate = new Coordinate(getRandomInt(0,10),getRandomInt(0,10))
+        let randomNum = Math.random()
+        if(randomNum < 0.5 &&  isValidShip(beginningCoordinate,"horizontal",length,gameBoard)){
+            this.#assignShips("horizontal",gameBoard,beginningCoordinate,length)
+            this.direction = "horizontal"
+            return true
+        }
+        else if(isValidShip(beginningCoordinate,"vertical",length,gameBoard)){
+            this.#assignShips("vertical",gameBoard,beginningCoordinate,length)
+            this.direction = "vertical"
+            return true
+        }
+        return false
     }
 
     set(gameBoard,newBeginningCoordinate,direction){
@@ -114,8 +124,7 @@ export class GameBoard{
     ships
     hits
 
-
-    constructor(length,amountOfShip) {
+    constructor(length,amountOfShip,mainShips) {
         this.board = []
         this.ships = []
         this.hits = []
@@ -125,11 +134,19 @@ export class GameBoard{
                 this.board.push(new Coordinate(j,i))
             }
         }
-
-        for (let i = 0; i < amountOfShip; i++) {
-            let ship = new Ship(this)
-            this.ships.push(ship)
+        if(mainShips !== undefined){
+            for (let i = 0; i < mainShips.length; i++) {
+                let ship = new Ship(this,mainShips[i].length)
+                this.ships.push(ship)
+            }
         }
+        else{
+            for (let i = 0; i < amountOfShip; i++) {
+                let ship = new Ship(this)
+                this.ships.push(ship)
+            }
+        }
+
     }
 
     receiveAttack(coordinate){
@@ -172,9 +189,9 @@ export class Player{
 
 
 
-    constructor(playerType) {
+    constructor(playerType,copyPlayer) {
         this.playerType = playerType
-        this.gameBoard = new GameBoard(10,5)
+        this.gameBoard = new GameBoard(10,5,copyPlayer.gameBoard.ships)
     }
 
 

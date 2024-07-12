@@ -250,7 +250,7 @@ async function createGame(){
     let player = new Player("Human")
     let playerUI = new PlayerUserInterface(player,firstPLayerContainer)
 
-    let bot = new Bot("Computer")
+    let bot = new Bot("Computer",player)
     let botUI = new PlayerUserInterface(bot,secondPlayerContainer)
 
     createGameBoard(playerUI)
