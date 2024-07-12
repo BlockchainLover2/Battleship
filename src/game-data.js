@@ -191,7 +191,8 @@ export class Player{
 
     constructor(playerType,copyPlayer) {
         this.playerType = playerType
-        this.gameBoard = new GameBoard(10,5,copyPlayer.gameBoard.ships)
+        this.gameBoard =
+            new GameBoard(10,5,copyPlayer!==undefined?copyPlayer.gameBoard.ships:undefined)
     }
 
 
