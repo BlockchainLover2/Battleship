@@ -18,8 +18,8 @@ body{
 
 .ship{
     background: blue;
-    height: 80px;
-    width: 80px;
+    height: 100%;
+    width: 100%;
     border: 1px solid black;
     display: flex;
 }
@@ -67,8 +67,6 @@ button{
 
 .board-element{
     border: solid 1px black;
-    width: 80px;
-    height: 80px;
     box-sizing: border-box;
     user-select: none;
     display: flex;
@@ -80,8 +78,8 @@ button{
 .first-player,.second-player{
     border: 1px solid black;
     height: 800px;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template: repeat(10,1fr) / repeat(10,1fr);
     box-sizing: border-box;
 }
 .turn{
